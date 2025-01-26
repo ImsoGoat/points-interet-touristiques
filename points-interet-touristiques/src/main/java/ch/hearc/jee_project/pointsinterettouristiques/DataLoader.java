@@ -7,7 +7,7 @@ import ch.hearc.jee_project.pointsinterettouristiques.model.ValidationStatus;
 import ch.hearc.jee_project.pointsinterettouristiques.repository.PlaceRepository;
 import ch.hearc.jee_project.pointsinterettouristiques.repository.UserRepository;
 import org.springframework.boot.CommandLineRunner;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 
@@ -92,8 +92,6 @@ public class DataLoader implements CommandLineRunner {
 
         System.out.println("Données initiales ajoutées !");
     }
-
-
 }
 
 
