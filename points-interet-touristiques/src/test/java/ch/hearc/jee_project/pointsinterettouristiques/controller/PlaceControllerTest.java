@@ -32,7 +32,10 @@ public class PlaceControllerTest {
 
     @BeforeEach
     public void setup() throws Exception {
-        // Nettoyer les données
+        // Nettoyer les évaluations de tous les lieux
+        mockMvc.perform(delete("/api/places/ratings/all"));
+
+        // Nettoyer les utilisateurs
         mockMvc.perform(delete("/api/users/all"));
 
         // Ajouter un administrateur
@@ -41,7 +44,7 @@ public class PlaceControllerTest {
         adminUser.setPassword("adminpass");
         adminUser.setRole(Role.ADMIN);
         String adminResponse = mockMvc.perform(post("/api/users")
-                        .contentType("application/json")
+                        .contentType("application/json") // Correctement configuré
                         .content(objectMapper.writeValueAsString(adminUser)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
@@ -53,19 +56,19 @@ public class PlaceControllerTest {
         normalUser.setPassword("userpass");
         normalUser.setRole(Role.USER);
         String userResponse = mockMvc.perform(post("/api/users")
-                        .contentType("application/json")
+                        .contentType("application/json") // Correctement configuré
                         .content(objectMapper.writeValueAsString(normalUser)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         normalUser = objectMapper.readValue(userResponse, User.class);
 
-        // Ajouter un lieu non validé (qui reste non validé)
+        // Ajouter un lieu non validé
         unvalidatedPlace = new Place();
         unvalidatedPlace.setName("Unvalidated Place");
         unvalidatedPlace.setLocation("Lyon");
         unvalidatedPlace.setLatitude(45.7640);
         unvalidatedPlace.setLongitude(4.8357);
-        unvalidatedPlace.setStatus(ValidationStatus.UNVALIDATED);
+        unvalidatedPlace.setDescription("A description for the test place");
         String unvalidatedPlaceResponse = mockMvc.perform(post("/api/places")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(unvalidatedPlace)))
@@ -73,13 +76,13 @@ public class PlaceControllerTest {
                 .andReturn().getResponse().getContentAsString();
         unvalidatedPlace = objectMapper.readValue(unvalidatedPlaceResponse, Place.class);
 
-        // Ajouter un lieu non validé, puis le valider via un admin
+        // Ajouter un lieu validé
         validatedPlace = new Place();
         validatedPlace.setName("Validated Place");
         validatedPlace.setLocation("Paris");
         validatedPlace.setLatitude(48.8566);
         validatedPlace.setLongitude(2.3522);
-        validatedPlace.setStatus(ValidationStatus.UNVALIDATED); // Initialement non validé
+        validatedPlace.setDescription("A description for the test place");
         String validatedPlaceResponse = mockMvc.perform(post("/api/places")
                         .contentType("application/json")
                         .content(objectMapper.writeValueAsString(validatedPlace)))
@@ -92,13 +95,12 @@ public class PlaceControllerTest {
                         .param("userId", String.valueOf(adminUser.getId())))
                 .andExpect(status().isOk());
 
-        // Récupérer le lieu validé pour être sûr de son état
+        // Recharger le lieu validé pour confirmer son état
         validatedPlace = objectMapper.readValue(mockMvc.perform(get("/api/places/" + validatedPlace.getId())
                         .param("userId", String.valueOf(adminUser.getId())))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(), Place.class);
     }
-
 
     // Test : Ajouter un lieu
     @Test
@@ -108,6 +110,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
 
         mockMvc.perform(post("/api/places")
                         .contentType("application/json")
@@ -124,6 +127,7 @@ public class PlaceControllerTest {
         place.setLocation("Original Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         String placeResponse = mockMvc.perform(post("/api/places")
@@ -152,6 +156,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         // Ajouter un lieu
@@ -198,6 +203,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         String placeResponse = mockMvc.perform(post("/api/places")
@@ -220,6 +226,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         // Ajouter un lieu
@@ -245,6 +252,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         String placeResponse = mockMvc.perform(post("/api/places")
@@ -268,6 +276,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         String placeResponse = mockMvc.perform(post("/api/places")
@@ -291,6 +300,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         String placeResponse = mockMvc.perform(post("/api/places")
@@ -313,6 +323,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         // Ajouter un lieu
@@ -346,6 +357,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
         place.setStatus(ValidationStatus.UNVALIDATED);
 
         String placeResponse = mockMvc.perform(post("/api/places")
@@ -374,6 +386,7 @@ public class PlaceControllerTest {
         place.setLocation("Test Location");
         place.setLatitude(48.858844);
         place.setLongitude(2.294351);
+        place.setDescription("A description for the test place");
 
         String placeResponse = mockMvc.perform(post("/api/places")
                         .contentType("application/json")
@@ -487,6 +500,26 @@ public class PlaceControllerTest {
         mockMvc.perform(get("/api/places/" + validatedPlace.getId() + "/average-rating"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(7.0));
+    }
+
+    @Test
+    public void userCanUpdateRating() throws Exception {
+        // Ajouter une note initiale
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "8"))
+                .andExpect(status().isOk());
+
+        // Mettre à jour la note
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "10"))
+                .andExpect(status().isOk());
+
+        // Vérifier que la note a été mise à jour
+        mockMvc.perform(get("/api/places/" + validatedPlace.getId() + "/ratings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0]").value(10));
     }
 
 }

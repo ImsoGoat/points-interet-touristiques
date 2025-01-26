@@ -25,6 +25,7 @@ public class PlaceRepositoryTest {
         validatedPlace.setLocation("Location 1");
         validatedPlace.setLatitude(48.858844);
         validatedPlace.setLongitude(2.294351);
+        validatedPlace.setDescription("A description for the test place");
         validatedPlace.setStatus(ValidationStatus.VALIDATED);
         placeRepository.save(validatedPlace);
 
@@ -33,6 +34,7 @@ public class PlaceRepositoryTest {
         unvalidatedPlace.setLocation("Location 2");
         unvalidatedPlace.setLatitude(48.8566);
         unvalidatedPlace.setLongitude(2.3522);
+        unvalidatedPlace.setDescription("A description for the test place");
         unvalidatedPlace.setStatus(ValidationStatus.UNVALIDATED);
         placeRepository.save(unvalidatedPlace);
 
@@ -41,6 +43,7 @@ public class PlaceRepositoryTest {
         rejectedPlace.setLocation("Location 3");
         rejectedPlace.setLatitude(40.712776);
         rejectedPlace.setLongitude(-74.005974);
+        rejectedPlace.setDescription("A description for the test place");
         rejectedPlace.setStatus(ValidationStatus.REJECTED);
         placeRepository.save(rejectedPlace);
     }

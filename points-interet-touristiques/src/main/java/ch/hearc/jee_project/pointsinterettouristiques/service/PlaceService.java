@@ -67,10 +67,7 @@ public class PlaceService {
         return placeRepository.save(place);
     }
 
-    // Ajouter une note à un lieu
     public void ratePlace(Long placeId, Long userId, int rating) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("Place not found"));
 
@@ -78,7 +75,11 @@ public class PlaceService {
             throw new RuntimeException("Only validated places can be rated");
         }
 
-        place.addRating(rating);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Ajouter ou mettre à jour la note pour cet utilisateur
+        place.addOrUpdateRating(user, rating);
         placeRepository.save(place);
     }
 
@@ -87,7 +88,7 @@ public class PlaceService {
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("Place not found"));
 
-        return place.getRatings();
+        return place.getRatings().stream().toList();
     }
 
     // Récupérer la moyenne des notes d'un lieu
@@ -97,4 +98,22 @@ public class PlaceService {
 
         return place.getAverageRating();
     }
+
+    public void removeUserRatings(User user) {
+        List<Place> places = placeRepository.findAll();
+        for (Place place : places) {
+            place.removeRating(user); // Appeler la méthode publique pour gérer la logique interne
+            placeRepository.save(place);
+        }
+    }
+
+    public void removeAllRatings() {
+        List<Place> places = placeRepository.findAll();
+        for (Place place : places) {
+            place.getRatings().clear();
+            place.recalculateAverageRating(); // Recalcul de la moyenne
+            placeRepository.save(place);
+        }
+    }
+
 }

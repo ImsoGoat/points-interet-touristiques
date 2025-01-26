@@ -145,9 +145,10 @@ public class PlaceController {
     // Endpoint pour voir les notes
     @GetMapping("/{id}/ratings")
     public ResponseEntity<List<Integer>> getRatings(@PathVariable Long id) {
-        List<Integer> ratings = placeService.getRatings(id);
-        return ResponseEntity.ok(ratings);
+        Place place = placeService.getPlaceById(id);
+        return ResponseEntity.ok(place.getRatings());
     }
+
 
     // Endpoint pour voir la moyenne des notes
     @GetMapping("/{id}/average-rating")
@@ -155,4 +156,11 @@ public class PlaceController {
         double averageRating = placeService.getAverageRating(id);
         return ResponseEntity.ok(averageRating);
     }
+
+    @DeleteMapping("/ratings/all")
+    public ResponseEntity<Void> deleteAllRatings() {
+        placeService.removeAllRatings();
+        return ResponseEntity.noContent().build();
+    }
+
 }
