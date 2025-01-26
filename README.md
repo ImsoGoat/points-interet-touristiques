@@ -17,7 +17,7 @@ Ce projet est une application **Spring Boot** permettant de gérer des lieux d'i
   - **Administrateur** : gestion protégée (validation, rejet, suppression).
 
 ### API REST :
-- Documentation des endpoints via Swagger.
+- Documentation des endpoints dans le fichier routes.md
 - Pagination et tri des résultats.
 
 ## Prérequis
@@ -42,7 +42,7 @@ Ce projet est une application **Spring Boot** permettant de gérer des lieux d'i
 ## Configuration
 ### Configuration par défaut :
 - La base de données est configurée en **H2**.
-- Les fichiers de configuration sont situés dans `src/main/resources` :
+- Les fichiers de configuration sont situés dans `src/main/resources` et `src/test/resources` :
   - **application.properties** : configuration par défaut.
   - **application-prod.properties** : configuration pour un environnement de production.
   - **application-test.properties** : configuration pour les tests.
@@ -60,8 +60,6 @@ Ce projet est une application **Spring Boot** permettant de gérer des lieux d'i
 - **Gestion des utilisateurs** :
   - `POST /api/users` : Créer un utilisateur.
   - `DELETE /api/users/all` : Supprimer tous les utilisateurs.
-
-- **Documentation Swagger** : Accessible via `http://localhost:8080/swagger-ui.html`.
 
 ## Tests
 - Les tests unitaires couvrent les fonctionnalités publiques et les validations principales.
