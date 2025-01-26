@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(properties = "spring.profiles.active=test")
+
 @AutoConfigureMockMvc
 public class PlaceControllerTest {
 
@@ -465,8 +466,7 @@ public class PlaceControllerTest {
         mockMvc.perform(get("/api/places/" + validatedPlace.getId() + "/ratings"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
-                .andExpect(jsonPath("$[0]").value(8))
-                .andExpect(jsonPath("$[1]").value(7));
+                .andExpect(jsonPath("$[0]").value(7));
     }
 
     // Test : Voir la moyenne des notes d'un lieu
@@ -479,7 +479,7 @@ public class PlaceControllerTest {
                 .andExpect(status().isOk());
 
         mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
-                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("userId", String.valueOf(adminUser.getId()))
                         .param("rating", "6"))
                 .andExpect(status().isOk());
 

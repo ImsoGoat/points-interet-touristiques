@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -124,7 +125,6 @@ public class PlaceController {
 
     // Ratings :
 
-    // Endpoint pour ajouter une note
     @PostMapping("/{id}/rate")
     public ResponseEntity<Void> ratePlace(@PathVariable Long id, @RequestParam Long userId, @RequestParam int rating) {
         if (rating < 1 || rating > 10) {
@@ -136,18 +136,19 @@ public class PlaceController {
             return ResponseEntity.ok().build();
         } catch (RuntimeException ex) {
             if ("Only validated places can be rated".equals(ex.getMessage())) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }
-            throw ex; // Pour les autres exceptions, laissez-les être gérées ailleurs.
+            throw ex; // Laisser les autres exceptions remonter
         }
     }
 
-    // Endpoint pour voir les notes
+
     @GetMapping("/{id}/ratings")
     public ResponseEntity<List<Integer>> getRatings(@PathVariable Long id) {
-        List<Integer> ratings = placeService.getRatings(id);
-        return ResponseEntity.ok(ratings);
+        Place place = placeService.getPlaceById(id);
+        return ResponseEntity.ok(new ArrayList<>(place.getRatings().values()));
     }
+
 
     // Endpoint pour voir la moyenne des notes
     @GetMapping("/{id}/average-rating")
@@ -155,4 +156,5 @@ public class PlaceController {
         double averageRating = placeService.getAverageRating(id);
         return ResponseEntity.ok(averageRating);
     }
+
 }

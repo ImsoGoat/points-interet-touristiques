@@ -46,6 +46,10 @@ public class DataLoader implements CommandLineRunner {
         eiffelTower.setLocation("Paris, France");
         eiffelTower.setLatitude(48.858844);
         eiffelTower.setLongitude(2.294351);
+        eiffelTower.setStatus(ValidationStatus.VALIDATED);
+        eiffelTower.addOrUpdateRating(user.getId(),5);
+        eiffelTower.addOrUpdateRating(user.getId(),10);
+        eiffelTower.addOrUpdateRating(admin.getId(),8);
 
         Place colosseum = new Place();
         colosseum.setName("Colisée");
@@ -53,6 +57,7 @@ public class DataLoader implements CommandLineRunner {
         colosseum.setLocation("Rome, Italie");
         colosseum.setLatitude(41.890251);
         colosseum.setLongitude(12.492373);
+        colosseum.setStatus(ValidationStatus.VALIDATED);
 
         Place statueOfLiberty = new Place();
         statueOfLiberty.setName("Statue de la Liberté");
@@ -60,6 +65,7 @@ public class DataLoader implements CommandLineRunner {
         statueOfLiberty.setLocation("New York, USA");
         statueOfLiberty.setLatitude(40.689247);
         statueOfLiberty.setLongitude(-74.044502);
+        statueOfLiberty.setStatus(ValidationStatus.UNVALIDATED);
 
         Place greatWall = new Place();
         greatWall.setName("Grande Muraille de Chine");
@@ -67,7 +73,7 @@ public class DataLoader implements CommandLineRunner {
         greatWall.setLocation("Chine");
         greatWall.setLatitude(40.431908);
         greatWall.setLongitude(116.570374);
-        greatWall.setStatus(ValidationStatus.VALIDATED);
+        greatWall.setStatus(ValidationStatus.REJECTED);
 
         Place machuPicchu = new Place();
         machuPicchu.setName("Machu Picchu");

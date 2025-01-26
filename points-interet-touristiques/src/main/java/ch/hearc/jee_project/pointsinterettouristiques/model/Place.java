@@ -1,9 +1,8 @@
 package ch.hearc.jee_project.pointsinterettouristiques.model;
 
 import jakarta.persistence.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Entity
 public class Place {
@@ -27,12 +26,15 @@ public class Place {
     private double longitude;
 
     @ElementCollection
-    private List<Integer> ratings = new ArrayList<>(); // Stocke les notes individuelles
+    @CollectionTable(name = "place_ratings", joinColumns = @JoinColumn(name = "place_id"))
+    @MapKeyColumn(name = "user_id")
+    @Column(name = "rating")
+    private Map<Long, Integer> ratings = new HashMap<>();
 
     @Column(nullable = false)
-    private double averageRating = 0.0; // Moyenne des notes
+    private double averageRating = 0.0;
 
-    @Enumerated(EnumType.STRING) // Stocke l'état en tant que chaîne
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private ValidationStatus status = ValidationStatus.UNVALIDATED;
 
@@ -93,32 +95,27 @@ public class Place {
         this.status = status;
     }
 
-    // ratings
-
-    public List<Integer> getRatings() {
+    public Map<Long, Integer> getRatings() {
         return ratings;
-    }
-
-    public void setRatings(List<Integer> ratings) {
-        this.ratings = ratings;
     }
 
     public double getAverageRating() {
         return averageRating;
     }
 
-    public void setAverageRating(double averageRating) {
-        this.averageRating = averageRating;
+    public void addOrUpdateRating(Long userId, int rating) {
+        ratings.put(userId, rating);
+        updateAverageRating();
     }
 
-    public void addRating(int rating) {
-        this.ratings.add(rating);
+    public void removeRating(Long userId) {
+        ratings.remove(userId);
         updateAverageRating();
     }
 
     private void updateAverageRating() {
         if (!ratings.isEmpty()) {
-            this.averageRating = ratings.stream().mapToInt(Integer::intValue).average().orElse(0.0);
+            this.averageRating = ratings.values().stream().mapToInt(Integer::intValue).average().orElse(0.0);
         } else {
             this.averageRating = 0.0;
         }

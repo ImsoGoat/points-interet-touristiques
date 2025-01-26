@@ -8,6 +8,7 @@ import ch.hearc.jee_project.pointsinterettouristiques.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class PlaceService {
@@ -69,8 +70,6 @@ public class PlaceService {
 
     // Ajouter une note à un lieu
     public void ratePlace(Long placeId, Long userId, int rating) {
-        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("Place not found"));
 
@@ -78,12 +77,16 @@ public class PlaceService {
             throw new RuntimeException("Only validated places can be rated");
         }
 
-        place.addRating(rating);
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        place.addOrUpdateRating(userId, rating);
         placeRepository.save(place);
     }
 
+
     // Récupérer les notes d'un lieu
-    public List<Integer> getRatings(Long placeId) {
+    public Map<Long,Integer> getRatings(Long placeId) {
         Place place = placeRepository.findById(placeId)
                 .orElseThrow(() -> new RuntimeException("Place not found"));
 
