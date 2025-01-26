@@ -6,6 +6,8 @@ import ch.hearc.jee_project.pointsinterettouristiques.model.ValidationStatus;
 import ch.hearc.jee_project.pointsinterettouristiques.repository.PlaceRepository;
 import ch.hearc.jee_project.pointsinterettouristiques.repository.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Map;
@@ -99,5 +101,25 @@ public class PlaceService {
                 .orElseThrow(() -> new RuntimeException("Place not found"));
 
         return place.getAverageRating();
+    }
+
+    // Récupérer les lieux validés avec pagination
+    public Page<Place> getValidatedPlaces(Pageable pageable) {
+        return placeRepository.findByStatus(ValidationStatus.VALIDATED, pageable);
+    }
+
+    // Récupérer les lieux non validés avec pagination
+    public Page<Place> getUnvalidatedPlaces(Pageable pageable) {
+        return placeRepository.findByStatus(ValidationStatus.UNVALIDATED, pageable);
+    }
+
+    // Récupérer les lieux rejetés avec pagination
+    public Page<Place> getRejectedPlaces(Pageable pageable) {
+        return placeRepository.findByStatus(ValidationStatus.REJECTED, pageable);
+    }
+
+    // Récupérer les lieux non validés et rejetés avec pagination
+    public Page<Place> getUnvalidatedAndRejectedPlaces(List<ValidationStatus> statuses, Pageable pageable) {
+        return placeRepository.findByStatusIn(statuses, pageable);
     }
 }

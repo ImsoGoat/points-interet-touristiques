@@ -16,6 +16,7 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    // Créer un user
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
         if (userRepository.findByUsername(user.getUsername()).isPresent()) {
@@ -25,6 +26,7 @@ public class UserController {
         return ResponseEntity.ok(savedUser);
     }
 
+    // Supprimer tous les users
     @DeleteMapping("/all")
     public ResponseEntity<Void> deleteAllUsers() {
         userRepository.deleteAll();

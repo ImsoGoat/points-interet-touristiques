@@ -98,7 +98,64 @@ public class PlaceControllerTest {
                         .param("userId", String.valueOf(adminUser.getId())))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString(), Place.class);
+
+        // Ajouter des lieux validés
+        for (int i = 1; i <= 15; i++) {
+            Place validated = new Place();
+            validated.setName("Validated Place " + i);
+            validated.setLocation("City " + i);
+            validated.setLatitude(48.8566 + i);
+            validated.setLongitude(2.3522 + i);
+            validated.setStatus(ValidationStatus.UNVALIDATED);
+            String response = mockMvc.perform(post("/api/places")
+                            .contentType("application/json")
+                            .content(objectMapper.writeValueAsString(validated)))
+                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+            validated = objectMapper.readValue(response, Place.class);
+
+            // Valider le lieu via l'admin
+            mockMvc.perform(patch("/api/places/" + validated.getId() + "/validate")
+                            .param("userId", String.valueOf(adminUser.getId())))
+                    .andExpect(status().isOk());
+        }
+
+        // Ajouter des lieux non validés
+        for (int i = 1; i <= 10; i++) {
+            Place unvalidated = new Place();
+            unvalidated.setName("Unvalidated Place " + i);
+            unvalidated.setLocation("City " + (i + 20));
+            unvalidated.setLatitude(48.8566 + i);
+            unvalidated.setLongitude(2.3522 + i);
+            unvalidated.setStatus(ValidationStatus.UNVALIDATED);
+            mockMvc.perform(post("/api/places")
+                            .contentType("application/json")
+                            .content(objectMapper.writeValueAsString(unvalidated)))
+                    .andExpect(status().isCreated());
+        }
+
+        // Ajouter des lieux rejetés
+        for (int i = 1; i <= 5; i++) {
+            Place rejected = new Place();
+            rejected.setName("Rejected Place " + i);
+            rejected.setLocation("City " + (i + 30));
+            rejected.setLatitude(48.8566 + i);
+            rejected.setLongitude(2.3522 + i);
+            rejected.setStatus(ValidationStatus.UNVALIDATED);
+            String response = mockMvc.perform(post("/api/places")
+                            .contentType("application/json")
+                            .content(objectMapper.writeValueAsString(rejected)))
+                    .andExpect(status().isCreated())
+                    .andReturn().getResponse().getContentAsString();
+            rejected = objectMapper.readValue(response, Place.class);
+
+            // Rejeter le lieu via l'admin
+            mockMvc.perform(patch("/api/places/" + rejected.getId() + "/reject")
+                            .param("userId", String.valueOf(adminUser.getId())))
+                    .andExpect(status().isOk());
+        }
     }
+
 
 
     // Test : Ajouter un lieu
@@ -488,5 +545,56 @@ public class PlaceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").value(7.0));
     }
+
+    // Doit retourner avec la pagination
+    @Test
+    public void getValidatedPlacesPaginated_shouldReturnPaginatedResults() throws Exception {
+        mockMvc.perform(get("/api/places/validatedPlaces/paginated")
+                        .param("page", "0") // Première page
+                        .param("size", "5") // Taille de 5 éléments par page
+                        .param("sort", "name,asc")) // Trier par nom en ordre croissant
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(5)); // 5 résultats dans la page
+    }
+
+
+    //Doit retourner avec la pagination
+    @Test
+    public void getUnvalidatedPlacesPaginated_shouldReturnPaginatedResults() throws Exception {
+        mockMvc.perform(get("/api/places/unvalidatedPlaces/paginated")
+                        .param("page", "0") // Première page
+                        .param("size", "5")) // Taille de 5 éléments par page
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(5)); // Vérifie la taille des résultats
+    }
+
+
+    //Doit retourner avec la pagination
+    @Test
+    public void getRejectedPlacesPaginated_shouldReturnPaginatedResults() throws Exception {
+        mockMvc.perform(get("/api/places/rejectedPlaces/paginated")
+                        .param("page", "0")
+                        .param("size", "10")
+                        .param("sort", "name,desc")) // Trier par nom en ordre décroissant
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].name").exists());
+    }
+
+    //Doit retourner avec la pagination
+    @Test
+    public void getUnvalidatedAndRejectedPlacesPaginated_shouldReturnPaginatedResults() throws Exception {
+        mockMvc.perform(get("/api/places/unvalidatedAndRejectedPlaces/paginated")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].status").value("REJECTED"));
+    }
+
+
+
 
 }
