@@ -9,9 +9,23 @@ public class Place {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
     private String name;
+
     private String description;
+
+    @Column(nullable = false)
     private String location;
+
+    @Column(nullable = false)
+    private double latitude;
+
+    @Column(nullable = false)
+    private double longitude;
+
+    @Enumerated(EnumType.STRING) // Stocke l'état en tant que chaîne
+    @Column(nullable = false)
+    private ValidationStatus status = ValidationStatus.UNVALIDATED;
 
     // Getters and Setters
     public Long getId() {
@@ -44,5 +58,29 @@ public class Place {
 
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public ValidationStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ValidationStatus status) {
+        this.status = status;
     }
 }
