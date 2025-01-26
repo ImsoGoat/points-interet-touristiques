@@ -27,6 +27,8 @@ public class PlaceControllerTest {
 
     private User adminUser;
     private User normalUser;
+    private Place validatedPlace;
+    private Place unvalidatedPlace;
 
     @BeforeEach
     public void setup() throws Exception {
@@ -56,7 +58,47 @@ public class PlaceControllerTest {
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         normalUser = objectMapper.readValue(userResponse, User.class);
+
+        // Ajouter un lieu non validé (qui reste non validé)
+        unvalidatedPlace = new Place();
+        unvalidatedPlace.setName("Unvalidated Place");
+        unvalidatedPlace.setLocation("Lyon");
+        unvalidatedPlace.setLatitude(45.7640);
+        unvalidatedPlace.setLongitude(4.8357);
+        unvalidatedPlace.setStatus(ValidationStatus.UNVALIDATED);
+        String unvalidatedPlaceResponse = mockMvc.perform(post("/api/places")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(unvalidatedPlace)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        unvalidatedPlace = objectMapper.readValue(unvalidatedPlaceResponse, Place.class);
+
+        // Ajouter un lieu non validé, puis le valider via un admin
+        validatedPlace = new Place();
+        validatedPlace.setName("Validated Place");
+        validatedPlace.setLocation("Paris");
+        validatedPlace.setLatitude(48.8566);
+        validatedPlace.setLongitude(2.3522);
+        validatedPlace.setStatus(ValidationStatus.UNVALIDATED); // Initialement non validé
+        String validatedPlaceResponse = mockMvc.perform(post("/api/places")
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(validatedPlace)))
+                .andExpect(status().isCreated())
+                .andReturn().getResponse().getContentAsString();
+        validatedPlace = objectMapper.readValue(validatedPlaceResponse, Place.class);
+
+        // Valider le lieu via l'admin
+        mockMvc.perform(patch("/api/places/" + validatedPlace.getId() + "/validate")
+                        .param("userId", String.valueOf(adminUser.getId())))
+                .andExpect(status().isOk());
+
+        // Récupérer le lieu validé pour être sûr de son état
+        validatedPlace = objectMapper.readValue(mockMvc.perform(get("/api/places/" + validatedPlace.getId())
+                        .param("userId", String.valueOf(adminUser.getId())))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), Place.class);
     }
+
 
     // Test : Ajouter un lieu
     @Test
@@ -375,6 +417,76 @@ public class PlaceControllerTest {
         mockMvc.perform(get("/api/places/rejectedPlaces")
                         .param("userId", String.valueOf(normalUser.getId())))
                 .andExpect(status().isUnauthorized());
+    }
+
+    // Test : Ajouter une note à un lieu validé
+    @Test
+    public void rateValidatedPlace_shouldAddRating() throws Exception {
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "8"))
+                .andExpect(status().isOk());
+    }
+
+    // Test : Ajouter une note à un lieu non validé (doit échouer)
+    @Test
+    public void rateUnvalidatedPlace_shouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/api/places/" + unvalidatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "8"))
+                .andExpect(status().isBadRequest());
+    }
+
+
+    // Test : Ajouter une note invalide
+    @Test
+    public void ratePlace_withInvalidRating_shouldReturnBadRequest() throws Exception {
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "15")) // Note invalide
+                .andExpect(status().isBadRequest());
+    }
+
+    // Test : Voir les notes d'un lieu
+    @Test
+    public void getRatings_shouldReturnRatings() throws Exception {
+        // Ajouter des notes
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "8"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "7"))
+                .andExpect(status().isOk());
+
+        // Vérifier les notes
+        mockMvc.perform(get("/api/places/" + validatedPlace.getId() + "/ratings"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0]").value(8))
+                .andExpect(jsonPath("$[1]").value(7));
+    }
+
+    // Test : Voir la moyenne des notes d'un lieu
+    @Test
+    public void getAverageRating_shouldReturnAverageRating() throws Exception {
+        // Ajouter des notes
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "8"))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(post("/api/places/" + validatedPlace.getId() + "/rate")
+                        .param("userId", String.valueOf(normalUser.getId()))
+                        .param("rating", "6"))
+                .andExpect(status().isOk());
+
+        // Vérifier la moyenne
+        mockMvc.perform(get("/api/places/" + validatedPlace.getId() + "/average-rating"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").value(7.0));
     }
 
 }

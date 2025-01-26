@@ -121,4 +121,38 @@ public class PlaceController {
         authorizeAdmin(userId);
         return ResponseEntity.ok(placeService.rejectPlace(id));
     }
+
+    // Ratings :
+
+    // Endpoint pour ajouter une note
+    @PostMapping("/{id}/rate")
+    public ResponseEntity<Void> ratePlace(@PathVariable Long id, @RequestParam Long userId, @RequestParam int rating) {
+        if (rating < 1 || rating > 10) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
+
+        try {
+            placeService.ratePlace(id, userId, rating);
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException ex) {
+            if ("Only validated places can be rated".equals(ex.getMessage())) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+            }
+            throw ex; // Pour les autres exceptions, laissez-les être gérées ailleurs.
+        }
+    }
+
+    // Endpoint pour voir les notes
+    @GetMapping("/{id}/ratings")
+    public ResponseEntity<List<Integer>> getRatings(@PathVariable Long id) {
+        List<Integer> ratings = placeService.getRatings(id);
+        return ResponseEntity.ok(ratings);
+    }
+
+    // Endpoint pour voir la moyenne des notes
+    @GetMapping("/{id}/average-rating")
+    public ResponseEntity<Double> getAverageRating(@PathVariable Long id) {
+        double averageRating = placeService.getAverageRating(id);
+        return ResponseEntity.ok(averageRating);
+    }
 }
